@@ -140,7 +140,7 @@ export default function RunAIApp() {
   const [calendar, setCalendar] = useState<{date:string,title:string,slug:string}[]>([])
   const [serverlessOpen, setServerlessOpen] = useState(false)
 
-  const USE_LOCAL_MOCK = true // change to false after adding OPENAI_API_KEY in Vercel
+  const USE_LOCAL_MOCK = false // change to false after adding OPENAI_API_KEY in Vercel
 
   /* ---- CHANGED: safe mapping instead of chained ternary ---- */
   const densityGap = useMemo(() => (
