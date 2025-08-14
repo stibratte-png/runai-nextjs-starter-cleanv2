@@ -1,13 +1,90 @@
 'use client'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Settings } from 'lucide-react'
+// ---- Seed article types + data ----
+type Article = {
+  title: string
+  body: string
+  category: 'Training' | 'Gear' | 'Nutrition' | 'Injury Prevention'
+  date: string
+}
+
+const SEED_ARTICLES: Article[] = [
+  {
+    title: 'Build Endurance Safely: A 6-Week Base Plan',
+    category: 'Training',
+    date: new Date().toISOString().slice(0,10),
+    body:
+      `A simple base phase helps you handle more training later without burnout. 
+      
+      • Weeks 1–2: 3–4 easy runs (30–45 min). Add 6×100 m relaxed strides twice/week. 
+      • Weeks 3–4: One longer run (50–70 min) + 2 easy days. Keep effort conversational. 
+      • Weeks 5–6: Long run 70–90 min. Add 6×1 min steady pickups mid-run. 
+      
+      Recovery cues: poor sleep, heavy legs, elevated morning HR → cut volume 30% for 5–7 days.`
+  },
+  {
+    title: 'Best Budget Running Shoes (2025)',
+    category: 'Gear',
+    date: new Date().toISOString().slice(0,10),
+    body:
+      `Looking for value? Prioritize midsole durability and fit. 
+      
+      Top picks under $120:
+      • Nike Pegasus — versatile daily trainer.
+      • Brooks Launch — firm, snappy feel for uptempo.
+      • Saucony Ride — balanced cushioning for most runners.
+      
+      Tip: Replace at ~500–700 km; rotate two pairs to reduce injury risk.`
+  },
+  {
+    title: 'Fueling a Half Marathon: What to Eat & When',
+    category: 'Nutrition',
+    date: new Date().toISOString().slice(0,10),
+    body:
+      `Carbs drive performance. 
+      
+      • 24–48h before: focus on carbs (rice, pasta, bread), normal salt, avoid new foods.
+      • Breakfast (2–3h pre-start): 2–3 g/kg carbs (toast + jam, oatmeal + banana).
+      • During race: 30–60 g carbs/hour via gels/chews + small sips of water.
+      
+      Practice fueling on long runs to avoid GI surprises.`
+  },
+  {
+    title: 'Stop Shin Splints Before They Start',
+    category: 'Injury Prevention',
+    date: new Date().toISOString().slice(0,10),
+    body:
+      `Shin pain usually comes from load spikes and weak calves. 
+      
+      Do 2–3×/week:
+      • Eccentric calf raises 3×12
+      • Toe raises 3×15
+      • Single-leg balance 3×30s
+      
+      Progress only one variable at a time: distance, intensity, or frequency.`
+  },
+  {
+    title: 'Interval Workouts That Actually Make You Faster',
+    category: 'Training',
+    date: new Date().toISOString().slice(0,10),
+    body:
+      `Use two proven sessions and progress slowly:
+      
+      • 6×3 min @ 5K–10K effort, 2 min easy jog.
+      • 12×400 m @ 3–5K effort, 200 m jog.
+      
+      Warm up 10–15 min easy + 4×20 s strides; cool down 10 min easy. 
+      Keep easy days truly easy so quality stays high.`
+  },
+]
 
 const ENABLE_ADMIN = process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true'
 
 export default function RunAIApp() {
   const [admin, setAdmin] = useState(false)
   const [layoutCfg, setLayoutCfg] = useState({ density: 'comfortable' })
-  const [articles, setArticles] = useState<any[]>([])
+  const [articles, setArticles] = useState<Article[]>(SEED_ARTICLES)
   const [filters, setFilters] = useState({ q: '' })
 
   // Safer mapping for density classes
