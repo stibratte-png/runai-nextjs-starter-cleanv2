@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
       <h2 className="text-xl font-semibold mt-6 mb-2">Contact</h2>
       <p className="mb-1">
         If you have questions about this policy, contact us at:
-        <a className="underline ml-1" href="mailto:contact@yourdomain.com">contact@yourdomain.com</a>
+        <a className="underline ml-1" href="mailto:runai.magazine@gmail.com">runai.magazine@gmail.com</a>
       </p>
       <p className="text-sm opacity-70">Last updated: {new Date().toISOString().slice(0, 10)}</p>
     </main>

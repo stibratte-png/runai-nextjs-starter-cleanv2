@@ -13,7 +13,7 @@ export default function AboutPage() {
       </p>
       <p className="mb-4">
         If you’d like to suggest a topic or product to review, we’d love to hear from you:
-        <a className="underline ml-1" href="mailto:contact@yourdomain.com">contact@yourdomain.com</a>.
+        <a className="underline ml-1" href="mailto:runai.magazine@gmail.com">runai.magazine@gmail.com</a>.
       </p>
       <p className="text-sm opacity-70">
         Disclosure: Some of our articles include affiliate links. We may earn a commission at no extra cost to you.

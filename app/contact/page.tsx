@@ -8,7 +8,7 @@ export default function ContactPage() {
 
       <h2 className="text-xl font-semibold mb-2">Email</h2>
       <p className="mb-4">
-        You can reach us at: <a href="mailto:contact@yourdomain.com" className="text-blue-500 underline">contact@yourdomain.com</a>
+        You can reach us at: <a href="mailto:runai.magazine@gmail.com" className="text-blue-500 underline">runai.magazine@gmail.com</a>
       </p>
 
       <h2 className="text-xl font-semibold mb-2">Business Inquiries</h2>
