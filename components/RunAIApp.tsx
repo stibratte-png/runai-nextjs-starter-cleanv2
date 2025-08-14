@@ -1,6 +1,7 @@
 'use client'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Settings } from 'lucide-react'
+
 // ---- Seed article types + data ----
 type Article = {
   title: string
@@ -83,9 +84,35 @@ const ENABLE_ADMIN = process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true'
 
 export default function RunAIApp() {
   const [admin, setAdmin] = useState(false)
-  const [layoutCfg, setLayoutCfg] = useState({ density: 'comfortable' })
+  const [layoutCfg] = useState<{ density: 'comfortable' | 'compact' | 'spacious' }>({ density: 'comfortable' })
   const [articles, setArticles] = useState<Article[]>(SEED_ARTICLES)
   const [filters, setFilters] = useState({ q: '' })
+
+  // --- AI generation state ---
+  const [genTopic, setGenTopic] = useState('Marathon pacing for beginners')
+  const [genCategory, setGenCategory] = useState<Article['category']>('Training')
+  const [genBusy, setGenBusy] = useState(false)
+  async function generateArticle() {
+    try {
+      setGenBusy(true)
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: genTopic, category: genCategory, words: 900 }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data?.error || 'Failed to generate'); return
+      }
+      // Prepend new article
+      setArticles(prev => [{ title: data.title, body: data.body, category: data.category, date: data.date }, ...prev])
+      setGenTopic('')
+    } catch (e: any) {
+      alert(e?.message || 'Network error')
+    } finally {
+      setGenBusy(false)
+    }
+  }
 
   // Safer mapping for density classes
   const densityGap = useMemo(
@@ -96,7 +123,7 @@ export default function RunAIApp() {
           spacious: 'gap-8',
           comfortable: 'gap-5',
         } as const
-      )[layoutCfg.density as 'compact' | 'spacious' | 'comfortable'] || 'gap-5',
+      )[layoutCfg.density] || 'gap-5',
     [layoutCfg.density]
   )
 
@@ -145,20 +172,57 @@ export default function RunAIApp() {
 
       {/* Content Section */}
       <main className={`flex-1 max-w-6xl mx-auto p-4 ${densityGap}`}>
+        <div className="mb-4 flex items-center gap-2">
+          <input
+            placeholder="Search articles…"
+            className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 flex-1"
+            value={filters.q}
+            onChange={(e) => setFilters({ q: e.target.value })}
+          />
+        </div>
+
         {filtered.length === 0 && <div>No articles found.</div>}
         {filtered.map((article, idx) => (
-          <article key={idx} className="p-4 bg-white/5 rounded-xl">
+          <article key={idx} className="p-4 bg-white/5 rounded-xl space-y-1">
             <h2 className="text-xl font-semibold">{article.title}</h2>
-            <p>{article.body}</p>
+            <p className="text-xs opacity-70">{article.category} • {article.date}</p>
+            <p className="mt-2 whitespace-pre-line">{article.body}</p>
           </article>
         ))}
       </main>
 
       {/* Admin Panel */}
       {ENABLE_ADMIN && admin && (
-        <aside className="fixed bottom-0 right-0 w-full md:w-96 bg-black/80 p-4 border-t border-white/10">
-          <h3 className="font-semibold mb-2">Admin Panel</h3>
-          {/* Admin panel contents go here */}
+        <aside className="fixed bottom-0 right-0 w-full md:w-[420px] bg-black/90 p-4 border-t border-white/10 backdrop-blur">
+          <h3 className="font-semibold mb-3">Admin • Generate article</h3>
+          <div className="space-y-3 text-sm">
+            <input
+              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10"
+              placeholder="Topic (e.g., 12-week 10K plan)"
+              value={genTopic}
+              onChange={(e) => setGenTopic(e.target.value)}
+            />
+            <select
+              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10"
+              value={genCategory}
+              onChange={(e) => setGenCategory(e.target.value as Article['category'])}
+            >
+              <option>Training</option>
+              <option>Gear</option>
+              <option>Nutrition</option>
+              <option>Injury Prevention</option>
+            </select>
+            <button
+              onClick={generateArticle}
+              disabled={genBusy || !genTopic.trim()}
+              className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10"
+            >
+              {genBusy ? 'Generating…' : 'Generate'}
+            </button>
+            <p className="text-xs opacity-70">
+              Tip: Be specific — “5K under 25 minutes plan”, “Shin splints rehab”, “Budget carbon plate shoes”.
+            </p>
+          </div>
         </aside>
       )}
     </div>
