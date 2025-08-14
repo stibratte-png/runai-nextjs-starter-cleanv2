@@ -143,7 +143,7 @@ export default function RunAIApp() {
   // safer mapping instead of chained ternary to avoid TS literal issues
   const densityGap = useMemo(() => (
   ({ compact: 'gap-3', spacious: 'gap-8', comfortable: 'gap-5' })[layoutCfg.density]
-), [layoutCfg.density]))
+), [layoutCfg.density])
 
   const filtered = useMemo(() => articles.filter(a => {
     const q = filters.q.trim().toLowerCase()
