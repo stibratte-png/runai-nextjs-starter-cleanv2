@@ -1,4 +1,5 @@
-export const runtime = 'edge' // rask og rimelig
+// app/api/generate/route.ts
+export const runtime = 'edge'
 
 type GenReq = {
   topic: string
@@ -15,16 +16,16 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-Write a helpful, practical running article.
+Write a practical running article.
 
 Topic: ${topic}
 Category: ${category}
-Target length: about ${words} words
+Target length: ~${words} words
 
-Return a JSON object with exactly these fields:
+Return a JSON object with fields:
 - title (string)
-- body (string, markdown or plain text allowed)
-- category (one of Training, Gear, Nutrition, Injury Prevention)
+- body (string, markdown/plain text ok)
+- category ("Training" | "Gear" | "Nutrition" | "Injury Prevention")
 `
 
     const r = await fetch('https://api.openai.com/v1/responses', {
@@ -35,8 +36,10 @@ Return a JSON object with exactly these fields:
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        response_format: { type: 'json_object' },
         input: prompt,
+        // NEW format for the Responses API:
+        modalities: ['text'],
+        text: { format: 'json' },
       }),
     })
 
@@ -46,18 +49,19 @@ Return a JSON object with exactly these fields:
     }
 
     const data = await r.json()
-    // Henter JSON-tekst fra Responses API
+
+    // Prefer the convenience field if present, fall back to structured path
     const jsonText =
+      data.output_text ??
       data?.output?.[0]?.content?.[0]?.text ??
-      data?.choices?.[0]?.message?.content ?? // fallback hvis API endres
       '{}'
 
-    const obj = JSON.parse(jsonText || '{}')
+    const obj = JSON.parse(jsonText)
 
     const article = {
       title: obj.title || topic,
       body: obj.body || 'No content generated.',
-      category: obj.category || category,
+      category: (obj.category || category) as GenReq['category'],
       date: new Date().toISOString().slice(0, 10),
     }
 
