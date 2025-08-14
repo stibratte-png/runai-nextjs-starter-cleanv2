@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
+import Head from 'next/head'
 
 export const metadata: Metadata = {
   title: 'RunAI – AI-powered running site',
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-7638173034547715" />
+      </head>
       <body>{children}</body>
     </html>
   )
