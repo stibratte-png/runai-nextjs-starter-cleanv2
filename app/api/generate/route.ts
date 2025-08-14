@@ -16,16 +16,16 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
+Return ONLY JSON (no prose). Fields:
+- title (string)
+- body (string)
+- category ("Training" | "Gear" | "Nutrition" | "Injury Prevention")
+
 Write a practical running article.
 
 Topic: ${topic}
 Category: ${category}
 Target length: ~${words} words
-
-Return a JSON object with fields:
-- title (string)
-- body (string, markdown/plain text ok)
-- category ("Training" | "Gear" | "Nutrition" | "Injury Prevention")
 `
 
     const r = await fetch('https://api.openai.com/v1/responses', {
@@ -36,9 +36,7 @@ Return a JSON object with fields:
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        input: prompt,
-        // Use the newer hint for JSON output (no 'modalities', no 'response_format')
-        text: { format: 'json' },
+        input: prompt, // <- no response_format / no text.format / no modalities
       }),
     })
 
@@ -48,14 +46,26 @@ Return a JSON object with fields:
     }
 
     const data = await r.json()
-
-    // Prefer convenience; fall back to structured path
-    const jsonText =
+    // Try common fields; fall back to raw string
+    let raw =
       data.output_text ??
       data?.output?.[0]?.content?.[0]?.text ??
-      '{}'
+      ''
 
-    const obj = JSON.parse(jsonText || '{}')
+    // Extract JSON object from any surrounding text just in case
+    const start = raw.indexOf('{')
+    const end = raw.lastIndexOf('}')
+    if (start !== -1 && end !== -1 && end > start) {
+      raw = raw.slice(start, end + 1)
+    }
+
+    let obj: any = {}
+    try {
+      obj = JSON.parse(raw)
+    } catch {
+      // Last-resort fallback if model didn't follow instructions
+      obj = { title: topic, body: raw || 'No content generated.', category }
+    }
 
     const article = {
       title: obj.title || topic,
