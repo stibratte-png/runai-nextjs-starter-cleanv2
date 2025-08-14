@@ -1,17 +1,18 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
-import Header from '@/components/Header' // <- make sure this file exists (see below)
+import Header from '@/components/Header' // make sure Header.tsx exists
+import Footer from '@/components/Footer' // optional: create Footer.tsx if you want one
 
 export const metadata: Metadata = {
-  title: 'RunAI – AI-powered running site',
+  title: 'RunAI – Running tips, training & gear',
   description:
-    'Generate and publish running articles automatically. Monetize with ads and affiliates.',
+    'Running training plans, gear recommendations, nutrition and injury-prevention advice.',
   metadataBase: new URL(process.env.SITE_URL || 'https://runai.example.com'),
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'RunAI – AI-powered running site',
+    title: 'RunAI – Running tips, training & gear',
     description:
-      'Generate and publish running articles automatically. Monetize with ads and affiliates.',
+      'Running training plans, gear recommendations, nutrition and injury-prevention advice.',
     url: process.env.SITE_URL || 'https://runai.example.com',
     siteName: 'RunAI',
     type: 'website',
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Header />
         {children}
+        <Footer /> {/* remove this line if you’re not adding a footer yet */}
       </body>
     </html>
   )

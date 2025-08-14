@@ -9,9 +9,9 @@ export default function Header() {
         </Link>
         <div className="space-x-6">
           <Link href="/" className="text-white hover:text-gray-300">Home</Link>
-          <Link href="/about" className="text-white hover:text-gray-300">About</Link>
-          <Link href="/privacy-policy" className="text-white hover:text-gray-300">Privacy Policy</Link>
-          <Link href="/contact" className="text-white hover:text-gray-300">Contact</Link>
+          <Link href="/about" className="hover:opacity-80">About</Link>
+          <Link href="/privacy-policy" className="hover:opacity-80">Privacy</Link>
+          <Link href="/contact" className="hover:opacity-80">Contact</Link>
         </div>
       </nav>
     </header>
