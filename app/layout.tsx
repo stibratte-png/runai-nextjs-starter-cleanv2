@@ -1,14 +1,17 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
+import Header from '@/components/Header' // <- make sure this file exists (see below)
 
 export const metadata: Metadata = {
   title: 'RunAI – AI-powered running site',
-  description: 'Generate and publish running articles automatically. Monetize with ads and affiliates.',
+  description:
+    'Generate and publish running articles automatically. Monetize with ads and affiliates.',
   metadataBase: new URL(process.env.SITE_URL || 'https://runai.example.com'),
   alternates: { canonical: '/' },
   openGraph: {
     title: 'RunAI – AI-powered running site',
-    description: 'Generate and publish running articles automatically. Monetize with ads and affiliates.',
+    description:
+      'Generate and publish running articles automatically. Monetize with ads and affiliates.',
     url: process.env.SITE_URL || 'https://runai.example.com',
     siteName: 'RunAI',
     type: 'website',
@@ -30,7 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         ></script>
       </head>
-      <body>{children}</body>
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   )
 }
