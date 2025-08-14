@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Rocket, Newspaper, Settings, Wand2, DollarSign, Calendar as CalendarIcon, Filter, BarChart2, ExternalLink, X, Upload } from 'lucide-react'
 import { GoogleAd, StickyTopAd, StickyBottomAd } from './Ads'
 
-/* ---- NEW: explicit types to satisfy TS ---- */
+/* ---- explicit types to satisfy TS ---- */
 type Density = 'comfortable' | 'compact' | 'spacious';
 type LayoutKind = 'grid' | 'magazine' | 'timeline';
 type LayoutCfg = {
@@ -18,7 +18,6 @@ type LayoutCfg = {
   radius: string;
   density: Density;
 };
-/* ------------------------------------------- */
 
 const randomId = () => Math.random().toString(36).slice(2)
 
@@ -40,12 +39,12 @@ const initialArticles: Article[] = [{
   category: 'Training',
   tags: ['base', 'endurance', 'beginner'],
   date: formatDate(),
-  summary: 'A simple 6-week plan to strengthen your base fitness without overtraining.',
+  summary: 'A simple 6‑week plan to strengthen your base fitness without overtraining.',
   content: `Building an aerobic base is about steady load, low to moderate intensity, and enough sleep.
 
 **Weeks 1–2:** 3–4 sessions in zone 2 (easy conversation pace), 30–45 min. Add 6×100 m strides after 2 of the runs.
 
-**Weeks 3–4:** Increase duration to 45–60 min for 2 runs. Add 6×1 min gentle pickups in zone 3 mid-run.
+**Weeks 3–4:** Increase duration to 45–60 min for 2 runs. Add 6×1 min gentle pickups in zone 3 mid‑run.
 
 **Weeks 5–6:** One slightly longer run (70–90 min) + 2–3 easy runs. Keep the pace controlled. Prioritize 7–8 h sleep and 1–2 strength sessions for calves/hamstrings.
 
@@ -54,12 +53,12 @@ const initialArticles: Article[] = [{
 }]
 
 const sampleAffiliate = [
-  { title: 'Nike Pegasus 41', img: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1200&auto=format&fit=crop', price: '$139', url: 'https://www.amazon.com/dp/B0EXAMPLE?tag=YOURTAG-20', pros: ['All-round', 'Durable', 'Stable'] },
+  { title: 'Nike Pegasus 41', img: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1200&auto=format&fit=crop', price: '$139', url: 'https://www.amazon.com/dp/B0EXAMPLE?tag=YOURTAG-20', pros: ['All‑round', 'Durable', 'Stable'] },
   { title: 'Hoka Mach X', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop', price: '$199', url: 'https://www.hoka.com/', pros: ['Light', 'Responsive', 'Daily trainer'] },
   { title: 'Garmin Forerunner 265', img: 'https://images.unsplash.com/photo-1515504452215-20d4c6199dcd?q=80&w=1200&auto=format&fit=crop', price: '$449', url: 'https://www.garmin.com/', pros: ['AMOLED', 'Good battery', 'HRV'] },
 ]
 
-/* ---- CHANGED: typed defaultLayout ---- */
+/* ---- typed defaultLayout ---- */
 const defaultLayout: LayoutCfg = {
   name: 'RunAI Standard',
   layout: 'grid',
@@ -134,15 +133,14 @@ export default function RunAIApp() {
   const [articles, setArticles] = useState<Article[]>(initialArticles)
   const [open, setOpen] = useState<Article | null>(null)
   const [admin, setAdmin] = useState(false)
-  /* ---- CHANGED: typed layoutCfg state ---- */
   const [layoutCfg, setLayoutCfg] = useState<LayoutCfg>(defaultLayout)
   const [filters, setFilters] = useState({ q:'', cat:'All', tag:'All' })
   const [calendar, setCalendar] = useState<{date:string,title:string,slug:string}[]>([])
   const [serverlessOpen, setServerlessOpen] = useState(false)
 
-  const USE_LOCAL_MOCK = false // change to false after adding OPENAI_API_KEY in Vercel
+  const USE_LOCAL_MOCK = true // change to false after adding OPENAI_API_KEY in Vercel
 
-  /* ---- CHANGED: safe mapping instead of chained ternary ---- */
+  // safer mapping instead of chained ternary to avoid TS literal issues
   const densityGap = useMemo(() => (
     ({ compact: 'gap-3', spacious: 'gap-8', comfortable: 'gap-5' })[layoutCfg.density]
   ), [layoutCfg.density])
@@ -199,7 +197,7 @@ export default function RunAIApp() {
       'How to choose the right running shoes',
       '3 strength workouts for runners',
       'Fartlek: play your way faster',
-      'Stay injury-free: calves and Achilles',
+      'Stay injury‑free: calves and Achilles',
       'Fueling before and after workouts',
       'Trail running for beginners',
       'How to build your marathon base',
@@ -377,10 +375,10 @@ Words: about \${words}\`;
 
 function mockParagraph(topic: string, tone: string) {
   const bits = [
-    `Focus on steady progression and balance volume with recovery. ${topic} gets easier when you prioritize sleep, easy heart-rate work and short, systematic sessions.`,
+    `Focus on steady progression and balance volume with recovery. ${topic} gets easier when you prioritize sleep, easy heart‑rate work and short, systematic sessions.`,
     `Stick to two simple key workouts per week. Let ${topic.toLowerCase()} be guided by body signals—not just watch data.`,
     `Use zone 2 as your base and add short strides or pickups to stimulate economy. Log perceived effort, not just pace.`,
-    `Test every 3–4 weeks: 20 minutes controlled-hard. Adjust the plan based on response instead of trusting generic templates.`,
+    `Test every 3–4 weeks: 20 minutes controlled‑hard. Adjust the plan based on response instead of trusting generic templates.`,
     `Do strength for calves, hamstrings and hip stabilizers. It’s cheap injury insurance that pays off in speed.`,
   ]
   return bits[Math.floor(Math.random()*bits.length)]
