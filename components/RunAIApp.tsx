@@ -138,12 +138,12 @@ export default function RunAIApp() {
   const [calendar, setCalendar] = useState<{date:string,title:string,slug:string}[]>([])
   const [serverlessOpen, setServerlessOpen] = useState(false)
 
-  const USE_LOCAL_MOCK = true // change to false after adding OPENAI_API_KEY in Vercel
+  const USE_LOCAL_MOCK = false
 
   // safer mapping instead of chained ternary to avoid TS literal issues
   const densityGap = useMemo(() => (
-    ({ compact: 'gap-3', spacious: 'gap-8', comfortable: 'gap-5' })[layoutCfg.density]
-  ), [layoutCfg.density])
+  ({ compact: 'gap-3', spacious: 'gap-8', comfortable: 'gap-5' })[layoutCfg.density]
+), [layoutCfg.density]))
 
   const filtered = useMemo(() => articles.filter(a => {
     const q = filters.q.trim().toLowerCase()
