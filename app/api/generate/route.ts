@@ -37,8 +37,7 @@ Return a JSON object with fields:
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
         input: prompt,
-        // NEW format for the Responses API:
-        modalities: ['text'],
+        // Use the newer hint for JSON output (no 'modalities', no 'response_format')
         text: { format: 'json' },
       }),
     })
@@ -50,13 +49,13 @@ Return a JSON object with fields:
 
     const data = await r.json()
 
-    // Prefer the convenience field if present, fall back to structured path
+    // Prefer convenience; fall back to structured path
     const jsonText =
       data.output_text ??
       data?.output?.[0]?.content?.[0]?.text ??
       '{}'
 
-    const obj = JSON.parse(jsonText)
+    const obj = JSON.parse(jsonText || '{}')
 
     const article = {
       title: obj.title || topic,
