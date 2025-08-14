@@ -1,0 +1,18 @@
+[
+  {
+    "id": "seed1",
+    "title": "How to build your aerobic base for the fall season",
+    "slug": "how-to-build-your-aerobic-base-for-the-fall-season",
+    "heroImage": "https://images.unsplash.com/photo-1546483875-ad9014c88eba?q=80&w=1920&auto=format&fit=crop",
+    "category": "Training",
+    "tags": [
+      "base",
+      "endurance",
+      "beginner"
+    ],
+    "date": "2025-08-14",
+    "summary": "A simple 6\u2011week plan to strengthen your base fitness without overtraining.",
+    "content": "Building an aerobic base is about steady load, low to moderate intensity, and enough sleep.",
+    "readMinutes": 6
+  }
+]
