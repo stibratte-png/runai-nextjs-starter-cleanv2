@@ -20,11 +20,12 @@ function isSeed(slug: string) {
 
 function urlForArticle(a: Article) {
   const slug = a.slug
-  // Hvis artikkelen finnes i seed, bruk ren SEO‑lenke
   if (isSeed(slug)) return `/articles/${slug}`
 
-  // Ellers bygg SEO‑URL + query‑params (for nye AI‑artikler)
-  const u = new URL(`/articles/${slug}`, typeof window !== 'undefined' ? window.location.origin : 'https://example.com')
+  const u = new URL(
+    `/articles/${slug}`,
+    typeof window !== 'undefined' ? window.location.origin : 'https://example.com'
+  )
   u.searchParams.set('t', a.title)
   u.searchParams.set('b', a.body)
   u.searchParams.set('c', a.category)
@@ -33,9 +34,16 @@ function urlForArticle(a: Article) {
   return u.pathname + '?' + u.searchParams.toString()
 }
 
+function fallbackImageFor(a: { title: string; category: Article['category'] }) {
+  const query = `${a.category},running,${a.title}`
+  return `https://source.unsplash.com/featured/800x450/?${encodeURIComponent(query)}`
+}
+
 export default function RunAIApp() {
   const [admin, setAdmin] = useState(false)
-  const [articles, setArticles] = useState<Article[]>(SEED_ARTICLES.map(a => ({ ...a, slug: slugify(a.title) })))
+  const [articles, setArticles] = useState<Article[]>(
+    SEED_ARTICLES.map(a => ({ ...a, slug: slugify(a.title) }))
+  )
   const [q, setQ] = useState('')
   const cats: Array<'All' | Article['category']> = ['All', 'Training', 'Gear', 'Nutrition', 'Injury Prevention']
   const [category, setCategory] = useState<'All' | Article['category']>('All')
@@ -56,18 +64,16 @@ export default function RunAIApp() {
       const data = await res.json()
       if (!res.ok) { alert(data?.error || 'Failed to generate'); return }
 
-      const fallbackImage = `https://source.unsplash.com/featured/1600x900/?running,${encodeURIComponent(genTopic || data.title || 'run')}`
       const article: Article = {
         title: data.title,
         body: data.body,
         category: data.category,
         date: data.date,
-        image: data.image || fallbackImage,
+        image: data.image || fallbackImageFor({ title: genTopic || data.title, category: data.category }),
         slug: slugify(data.title),
       }
       setArticles(prev => [article, ...prev])
 
-      // Åpne artikkel (beholder query‑params for nye AI‑artikler)
       const u = new URL(window.location.origin + '/articles/' + article.slug)
       u.searchParams.set('t', article.title)
       u.searchParams.set('b', article.body)
@@ -93,17 +99,13 @@ export default function RunAIApp() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top bar */}
+      {/* Top bar – fjernet logo/duplikat, behold bare søk + admin */}
       <div className="bg-black/70 backdrop-blur sticky top-0 z-50 border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
-          <div>
-            <div className="font-semibold text-lg tracking-tight">RunAI</div>
-            <div className="text-xs opacity-70">Training • Gear • Nutrition</div>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-2 items-center justify-end">
           <div className="flex items-center gap-2">
             <input
               placeholder="Search articles…"
-              className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
               value={q}
               onChange={e => setQ(e.target.value)}
               aria-label="Search articles"
@@ -121,21 +123,22 @@ export default function RunAIApp() {
           </div>
         </div>
 
-        {/* Kategori-meny */}
+        {/* Kategori-meny (chips) – behold som filtret UI, og linker til SEO-sider */}
         <div className="max-w-6xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
           {cats.map(c => {
             const isActive = category === c
             const href =
               c === 'All'
                 ? '/'
-                : '/category/' +
-                  (c === 'Injury Prevention' ? 'injury-prevention' : c.toLowerCase())
+                : '/category/' + (c === 'Injury Prevention' ? 'injury-prevention' : c.toLowerCase())
             return (
               <Link
                 key={c}
                 href={href}
                 onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-white/20 border-white/30' : 'bg-white/5 border-white/10 hover:bg-white/10'} focus:outline-none focus:ring-2 focus:ring-white/30`}
+                className={`px-3 py-1.5 rounded-full border focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                  isActive ? 'bg-white/25 border-white/30 text-white' : 'bg-white/10 border-white/15 text-white/90 hover:bg-white/15'
+                }`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {c}
@@ -145,13 +148,13 @@ export default function RunAIApp() {
         </div>
       </div>
 
-      {/* Hero – lysere (hvit) tekst + myk gradient */}
+      {/* Hero – lysere tekst + litt større beskrivelse */}
       <section className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white py-10">
         <div className="max-w-6xl mx-auto px-4 text-center space-y-3">
           <h1 className="text-3xl md:text-5xl font-semibold leading-tight drop-shadow">
             Smart running tips, training plans & gear picks
           </h1>
-          <p className="opacity-95 max-w-prose mx-auto text-lg">
+          <p className="text-white/95 max-w-prose mx-auto text-lg md:text-xl">
             Practical guidance for runners — covering workouts, shoes, watches, fueling, and injury prevention.
           </p>
         </div>
@@ -160,31 +163,34 @@ export default function RunAIApp() {
       {/* Preview feed */}
       <main className="flex-1 max-w-6xl mx-auto p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.length === 0 && <div className="opacity-80">No articles found.</div>}
-        {filtered.map(a => (
-          <Link
-            key={a.slug}
-            href={urlForArticle(a)}
-            aria-label={`Read article: ${a.title}`}
-            className="text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/30"
-          >
-            {a.image && (
-              <Image
-                src={a.image}
-                alt={a.title}
-                width={640}
-                height={360}
-                className="w-full h-44 object-cover"
-                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                priority={false}
-              />
-            )}
-            <div className="p-3 space-y-1">
-              <div className="text-xs opacity-70">{a.category} • {a.date}</div>
-              <h2 className="font-semibold">{a.title}</h2>
-              <p className="text-sm opacity-90">{excerpt(a.body, 28)}</p>
-            </div>
-          </Link>
-        ))}
+        {filtered.map(a => {
+          const safeImg = a.image || fallbackImageFor(a)
+          return (
+            <Link
+              key={a.slug}
+              href={urlForArticle(a)}
+              aria-label={`Read article: ${a.title}`}
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg shadow-black/10 hover:shadow-xl transition-shadow"
+            >
+              {safeImg && (
+                <Image
+                  src={safeImg}
+                  alt={`${a.title} cover image`}
+                  width={640}
+                  height={360}
+                  className="w-full h-44 object-cover"
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  priority={false}
+                />
+              )}
+              <div className="p-4 space-y-1">
+                <div className="text-xs opacity-80">{a.category} • {a.date}</div>
+                <h2 className="font-semibold">{a.title}</h2>
+                <p className="text-sm opacity-95">{excerpt(a.body, 28)}</p>
+              </div>
+            </Link>
+          )
+        })}
       </main>
 
       {/* Admin generator */}
@@ -193,7 +199,7 @@ export default function RunAIApp() {
           <h3 className="font-semibold mb-3">Admin • Generate article</h3>
           <div className="space-y-3 text-sm">
             <input
-              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
               placeholder="Topic (e.g., 12-week 10K plan)"
               value={genTopic}
               onChange={(e) => setGenTopic(e.target.value)}
