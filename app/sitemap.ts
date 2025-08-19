@@ -1,13 +1,32 @@
+// /app/sitemap.ts
 import type { MetadataRoute } from 'next'
-import { getArticles } from '@/data/articles'
+import { SEED_ARTICLES, slugify } from '@/lib/seed'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.SITE_URL || 'https://runai.example.com'
-  const items = (await getArticles()).map(a => ({
-    url: `${base}/articles/${a.slug}`,
+
+  const cats = ['training', 'gear', 'nutrition', 'injury-prevention'].map((slug) => ({
+    url: `${base}/category/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.6,
   }))
-  return [{ url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 }, ...items]
+
+  const articles = SEED_ARTICLES.map((a) => ({
+    url: `${base}/articles/${slugify(a.title)}`,
+    lastModified: new Date(a.date ?? Date.now()),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  return [
+    {
+      url: base,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...cats,
+    ...articles,
+  ]
 }

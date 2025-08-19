@@ -1,6 +1,7 @@
 'use client'
 import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Settings } from 'lucide-react'
 import { Article as SeedArticle, SEED_ARTICLES, slugify } from '@/lib/seed'
 
@@ -13,9 +14,28 @@ function excerpt(text: string, words = 40) {
 
 const ENABLE_ADMIN = process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true'
 
+function isSeed(slug: string) {
+  return SEED_ARTICLES.some(a => slugify(a.title) === slug)
+}
+
+function urlForArticle(a: Article) {
+  const slug = a.slug
+  // Hvis artikkelen finnes i seed, bruk ren SEO‑lenke
+  if (isSeed(slug)) return `/articles/${slug}`
+
+  // Ellers bygg SEO‑URL + query‑params (for nye AI‑artikler)
+  const u = new URL(`/articles/${slug}`, typeof window !== 'undefined' ? window.location.origin : 'https://example.com')
+  u.searchParams.set('t', a.title)
+  u.searchParams.set('b', a.body)
+  u.searchParams.set('c', a.category)
+  u.searchParams.set('d', a.date)
+  if (a.image) u.searchParams.set('img', a.image)
+  return u.pathname + '?' + u.searchParams.toString()
+}
+
 export default function RunAIApp() {
   const [admin, setAdmin] = useState(false)
-  const [articles, setArticles] = useState<Article[]>(SEED_ARTICLES)
+  const [articles, setArticles] = useState<Article[]>(SEED_ARTICLES.map(a => ({ ...a, slug: slugify(a.title) })))
   const [q, setQ] = useState('')
   const cats: Array<'All' | Article['category']> = ['All', 'Training', 'Gear', 'Nutrition', 'Injury Prevention']
   const [category, setCategory] = useState<'All' | Article['category']>('All')
@@ -37,7 +57,6 @@ export default function RunAIApp() {
       if (!res.ok) { alert(data?.error || 'Failed to generate'); return }
 
       const fallbackImage = `https://source.unsplash.com/featured/1600x900/?running,${encodeURIComponent(genTopic || data.title || 'run')}`
-
       const article: Article = {
         title: data.title,
         body: data.body,
@@ -48,7 +67,7 @@ export default function RunAIApp() {
       }
       setArticles(prev => [article, ...prev])
 
-      // Åpne artikkel med SEO-URL. For nye AI-artikler sender vi innhold via query params
+      // Åpne artikkel (beholder query‑params for nye AI‑artikler)
       const u = new URL(window.location.origin + '/articles/' + article.slug)
       u.searchParams.set('t', article.title)
       u.searchParams.set('b', article.body)
@@ -84,14 +103,17 @@ export default function RunAIApp() {
           <div className="flex items-center gap-2">
             <input
               placeholder="Search articles…"
-              className="px-3 py-2 rounded-xl bg-white/10 border border-white/10"
+              className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
               value={q}
               onChange={e => setQ(e.target.value)}
+              aria-label="Search articles"
             />
             {ENABLE_ADMIN && (
               <button
                 onClick={() => setAdmin(v => !v)}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
+                aria-pressed={admin}
+                aria-label="Toggle admin panel"
               >
                 <Settings size={16}/> Admin
               </button>
@@ -113,7 +135,8 @@ export default function RunAIApp() {
                 key={c}
                 href={href}
                 onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-white/20 border-white/30' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                className={`px-3 py-1.5 rounded-full border ${isActive ? 'bg-white/20 border-white/30' : 'bg-white/5 border-white/10 hover:bg-white/10'} focus:outline-none focus:ring-2 focus:ring-white/30`}
+                aria-current={isActive ? 'page' : undefined}
               >
                 {c}
               </Link>
@@ -122,14 +145,14 @@ export default function RunAIApp() {
         </div>
       </div>
 
-      {/* Hero */}
-      <section className="bg-[var(--primary)] text-black py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center space-y-2">
-          <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
+      {/* Hero – lysere (hvit) tekst + myk gradient */}
+      <section className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white py-10">
+        <div className="max-w-6xl mx-auto px-4 text-center space-y-3">
+          <h1 className="text-3xl md:text-5xl font-semibold leading-tight drop-shadow">
             Smart running tips, training plans & gear picks
           </h1>
-          <p className="opacity-90 max-w-prose mx-auto">
-            Practical guidance for runners — workouts, shoes, watches, fueling and injury prevention.
+          <p className="opacity-95 max-w-prose mx-auto text-lg">
+            Practical guidance for runners — covering workouts, shoes, watches, fueling, and injury prevention.
           </p>
         </div>
       </section>
@@ -140,11 +163,20 @@ export default function RunAIApp() {
         {filtered.map(a => (
           <Link
             key={a.slug}
-            href={`/articles/${a.slug}`}
-            className="text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl overflow-hidden"
+            href={urlForArticle(a)}
+            aria-label={`Read article: ${a.title}`}
+            className="text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/30"
           >
             {a.image && (
-              <img src={a.image} alt={a.title} className="w-full h-44 object-cover" loading="lazy" />
+              <Image
+                src={a.image}
+                alt={a.title}
+                width={640}
+                height={360}
+                className="w-full h-44 object-cover"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                priority={false}
+              />
             )}
             <div className="p-3 space-y-1">
               <div className="text-xs opacity-70">{a.category} • {a.date}</div>
@@ -161,13 +193,13 @@ export default function RunAIApp() {
           <h3 className="font-semibold mb-3">Admin • Generate article</h3>
           <div className="space-y-3 text-sm">
             <input
-              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10"
+              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
               placeholder="Topic (e.g., 12-week 10K plan)"
               value={genTopic}
               onChange={(e) => setGenTopic(e.target.value)}
             />
             <select
-              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10"
+              className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30"
               value={genCategory}
               onChange={(e) => setGenCategory(e.target.value as Article['category'])}
             >
@@ -179,7 +211,7 @@ export default function RunAIApp() {
             <button
               onClick={generateArticle}
               disabled={genBusy || !genTopic.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10"
+              className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-50"
             >
               {genBusy ? 'Generating…' : 'Generate'}
             </button>
