@@ -1,7 +1,5 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
-
-// Hvis du ikke har Header/Footer, fjern importene eller lag enkle placeholders
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
@@ -18,7 +16,7 @@ export const metadata: Metadata = {
     url: process.env.SITE_URL || 'https://runai.example.com',
     siteName: 'RunAI',
     type: 'website',
-    images: ['/og-image.png'],
+    images: ['/og-image.png'], // fallback bilde i public/
   },
   robots: { index: true, follow: true },
 }
@@ -32,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           name="google-adsense-account"
           content={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-xxxxxxxxxxxxxxxx'}
         />
-        {/* AdSense script for loading ads */}
+        {/* AdSense script */}
         <script
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${
@@ -41,9 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         ></script>
       </head>
-      <body className="bg-black text-white">
+      <body className="bg-black text-white min-h-screen flex flex-col">
         <Header />
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
         <Footer />
       </body>
     </html>
