@@ -22,6 +22,7 @@ function urlForArticle(a: Article) {
   const slug = a.slug
   if (isSeed(slug)) return `/articles/${slug}`
 
+  // For helt nye AI-artikler: bruk SEO-URL + query-params for innhold
   const u = new URL(
     `/articles/${slug}`,
     typeof window !== 'undefined' ? window.location.origin : 'https://example.com'
@@ -34,6 +35,7 @@ function urlForArticle(a: Article) {
   return u.pathname + '?' + u.searchParams.toString()
 }
 
+// Alltid-tilgjengelig fallback-bilde (Unsplash featured)
 function fallbackImageFor(a: { title: string; category: Article['category'] }) {
   const query = `${a.category},running,${a.title}`
   return `https://source.unsplash.com/featured/800x450/?${encodeURIComponent(query)}`
@@ -69,7 +71,7 @@ export default function RunAIApp() {
         body: data.body,
         category: data.category,
         date: data.date,
-        image: data.image || fallbackImageFor({ title: genTopic || data.title, category: data.category }),
+        image: (data.image?.trim() || fallbackImageFor({ title: genTopic || data.title, category: data.category })),
         slug: slugify(data.title),
       }
       setArticles(prev => [article, ...prev])
@@ -99,7 +101,7 @@ export default function RunAIApp() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top bar – fjernet logo/duplikat, behold bare søk + admin */}
+      {/* Top bar – kun søk + admin (logo ligger i Header.tsx) */}
       <div className="bg-black/70 backdrop-blur sticky top-0 z-50 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-2 items-center justify-end">
           <div className="flex items-center gap-2">
@@ -123,7 +125,7 @@ export default function RunAIApp() {
           </div>
         </div>
 
-        {/* Kategori-meny (chips) – behold som filtret UI, og linker til SEO-sider */}
+        {/* Kategori-chips – filtrerer lokalt og linker til SEO-sidene */}
         <div className="max-w-6xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
           {cats.map(c => {
             const isActive = category === c
@@ -148,7 +150,7 @@ export default function RunAIApp() {
         </div>
       </div>
 
-      {/* Hero – lysere tekst + litt større beskrivelse */}
+      {/* Hero – lys og tydelig */}
       <section className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white py-10">
         <div className="max-w-6xl mx-auto px-4 text-center space-y-3">
           <h1 className="text-3xl md:text-5xl font-semibold leading-tight drop-shadow">
@@ -160,11 +162,11 @@ export default function RunAIApp() {
         </div>
       </section>
 
-      {/* Preview feed */}
+      {/* Preview feed – ALLTID med et bilde (fallback hvis mangler) */}
       <main className="flex-1 max-w-6xl mx-auto p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.length === 0 && <div className="opacity-80">No articles found.</div>}
         {filtered.map(a => {
-          const safeImg = a.image || fallbackImageFor(a)
+          const safeImg = (a.image?.trim() || fallbackImageFor(a)) // <- garanterer URL
           return (
             <Link
               key={a.slug}
@@ -172,17 +174,15 @@ export default function RunAIApp() {
               aria-label={`Read article: ${a.title}`}
               className="text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg shadow-black/10 hover:shadow-xl transition-shadow"
             >
-              {safeImg && (
-                <Image
-                  src={safeImg}
-                  alt={`${a.title} cover image`}
-                  width={640}
-                  height={360}
-                  className="w-full h-44 object-cover"
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  priority={false}
-                />
-              )}
+              <Image
+                src={safeImg}
+                alt={`${a.title} cover image`}
+                width={640}
+                height={360}
+                className="w-full h-44 object-cover"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                priority={false}
+              />
               <div className="p-4 space-y-1">
                 <div className="text-xs opacity-80">{a.category} • {a.date}</div>
                 <h2 className="font-semibold">{a.title}</h2>

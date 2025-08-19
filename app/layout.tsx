@@ -1,7 +1,9 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
-import Header from '@/components/Header' // make sure Header.tsx exists
-import Footer from '@/components/Footer' // optional: create Footer.tsx if you want one
+
+// Hvis du ikke har Header/Footer, fjern importene eller lag enkle placeholders
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'RunAI – Running tips, training & gear',
@@ -26,18 +28,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         {/* AdSense verification meta tag */}
-        <meta name="google-adsense-account" content="ca-pub-7638173034547715" />
+        <meta
+          name="google-adsense-account"
+          content={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-xxxxxxxxxxxxxxxx'}
+        />
         {/* AdSense script for loading ads */}
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7638173034547715"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${
+            process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-xxxxxxxxxxxxxxxx'
+          }`}
           crossOrigin="anonymous"
         ></script>
       </head>
-      <body>
+      <body className="bg-black text-white">
         <Header />
-        {children}
-        <Footer /> {/* remove this line if you’re not adding a footer yet */}
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   )
